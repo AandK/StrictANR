@@ -2,6 +2,7 @@ package com.github.strictanr.testapp;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mStatusTV;
     private Boolean mKeepTracking;
     private StrictANRWatchDog mWatchDog = null;
+    private Handler mHandler;
+    public static final int MSG_TOAST = 0X1;
 
     //set strict anr time interval to 2000 milliseconds.
     private final int mTimeInterval = 2000;
@@ -29,6 +32,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAppNotResponding(StrictANRError error) {
                 JLog.i("Strict ANR detected.");
+                Message msg = new Message();
+                msg.what = MSG_TOAST;
+                msg.obj = "Strict ANR detected.";
+                mHandler.sendMessage(msg);
+
                 error.printAllStackTrace();
             }
         });
@@ -40,10 +48,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
-
-    private void toastMessage(String message) {
-        Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 
     private void updateStatus(boolean keepTracking) {
@@ -58,11 +62,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mHandler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case MSG_TOAST:
+                        Toast.makeText(MainActivity.this, (String)msg.obj, Toast.LENGTH_SHORT).show();
+                }
+            }
+        };
+
         mStatusTV = (TextView)findViewById(R.id.status);
         TextView tv = (TextView)findViewById(R.id.strictANRInterval);
         tv.setText("Strict ANR Interval: " + mTimeInterval + " milliseconds");
 
-        findViewById(R.id.simpleAll).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.doSleep).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 doSleep();
@@ -72,11 +87,16 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.startTracking).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mWatchDog == null) {
+                if (mWatchDog == null) {
                     initStrictANRWatchDog();
                 }
                 mWatchDog.startTracking();
                 mKeepTracking = true;
+                Message msg = new Message();
+                msg.what = MSG_TOAST;
+                msg.obj = "start tracking";
+                mHandler.sendMessage(msg);
+
                 updateStatus(mKeepTracking);
             }
         });
@@ -89,6 +109,12 @@ public class MainActivity extends AppCompatActivity {
                 //If a Thread needs to be run more than once, then one should make an new instance of the Thread and call start on it.
                 mWatchDog = null;
                 mKeepTracking = false;
+
+                Message msg = new Message();
+                msg.what = MSG_TOAST;
+                msg.obj = "stop tracking";
+                mHandler.sendMessage(msg);
+
                 updateStatus(mKeepTracking);
             }
         });

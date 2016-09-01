@@ -51,7 +51,7 @@
         android:layout_weight="1">
 
         <Button
-            android:id="@+id/simpleAll"
+            android:id="@+id/doSleep"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

@@ -10,7 +10,7 @@ import android.os.Looper;
 import android.util.Log;
 
 /**
- * A watchdog timer thread that detects when the UI thread has frozen.
+ * A strict anr watchdog timer thread that detects when the UI thread has frozen.
  */
 
 @SuppressWarnings("UnusedDeclaration")
